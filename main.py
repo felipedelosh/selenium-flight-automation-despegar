@@ -39,10 +39,6 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
         global _destination
         _integrity = [False, False, False, False]
 
-        print(input_origin.get_attribute("value"))
-        print(input_destination.get_attribute("value"))
-        print("===========================================")
-
         _integrity[0] = True if input_origin is not None and input_origin.get_attribute("value") != "" and input_origin.get_attribute("value") == _origin else False
         _integrity[1] = True if input_destination is not None and input_destination.get_attribute("value") != "" and input_destination.get_attribute("value") == _destination else False
 
