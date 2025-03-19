@@ -13,12 +13,18 @@ from selenium.webdriver.support import expected_conditions as EC
 import time
 import random
 
+
 # CONFIG
 _LOGS = ""
 _url = "https://www.despegar.com.co/vuelos/"
 _origin = "Manizales, Caldas, Colombia"
 _destination = "Armenia, Quindío, Colombia"
 _current_day_mark = "HOY"
+
+
+def write_logs():
+    with open("bot_logs.log", "a", encoding="UTF-8") as log_file:
+        log_file.write(_LOGS + "\n")
 
 
 def extact_flight_information(_url, _one_way_flight, _origin, _destination):
@@ -147,13 +153,13 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
                 except:
                     _LOGS = _LOGS + "ERROR FATAL Selecting DATE Flight.\n"
 
-
             if btn_date_today:
                 btn_date_today.click()
+
         except:
             pass
         
-        # Serach Flight information
+        # Search Flight information
         try:
             while True:
                 _integrity = verify_integrity_input_args(origin_input, destination_input)
@@ -177,16 +183,15 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
         except:
             _LOGS = _LOGS + "ERROR TO TRY PRESS BUTTON SEARCH!!!!\n"
 
-
         time.sleep(50)
-
+        # END TRY
+    except:
+        print("FATAL ERROR!")
     finally:
         _LOGS = _LOGS + "DAS ENDE.\n"
         browser.quit()
 
+    write_logs()
+
 
 extact_flight_information(_url, True, _origin, _destination)
-
-# SAVE LOG FILE
-with open("log.log", "a", encoding="UTF-8") as f:
-    f.write(_LOGS)
