@@ -46,7 +46,7 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
             #origen_input.send_keys(Keys.DELETE)
             for i in _origin:
                 origin_input.send_keys(i)
-                time.sleep(0.1)
+                time.sleep(random.uniform(0.05, 0.2))
 
 
             time.sleep(1)
@@ -65,7 +65,7 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
             destination_input.click()
             for i in _destination:
                 destination_input.send_keys(i)
-                time.sleep(0.1)
+                time.sleep(random.uniform(0.05, 0.2))
             destination_input.send_keys(Keys.TAB)
 
             time.sleep(1)
@@ -164,25 +164,24 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
                 else:
                     if not _integrity[0]:
                         _LOGS = _LOGS + "Retry FILL orgin\n"
+                        time.sleep(random.uniform(1, 3))
                         origin_input = fill_details_origin(_origin)
 
                     if not _integrity[1]:
                         _LOGS = _LOGS + "Retry FILL Destination\n"
+                        time.sleep(random.uniform(1, 3))
                         destination_input = fill_details_destination(_destination)
-
-
-            print("Integridad verificada")
 
             btn_search_flight = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="searchbox-v2"]/div/div/div/div/div/div[3]/div[3]/button/em')))
             browser.execute_script("arguments[0].click();", btn_search_flight)
         except:
-            _LOGS = _LOGS + "ERROR TO TRY PRESS BUTTON\n"
+            _LOGS = _LOGS + "ERROR TO TRY PRESS BUTTON SEARCH!!!!\n"
 
 
-        time.sleep(10)
+        time.sleep(50)
 
     finally:
-        _LOGS = _LOGS + "ERROR FATAL\n"
+        _LOGS = _LOGS + "DAS ENDE.\n"
         browser.quit()
 
 
