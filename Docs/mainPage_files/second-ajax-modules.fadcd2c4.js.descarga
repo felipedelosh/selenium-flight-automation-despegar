@@ -1,0 +1,53 @@
+const secondXhr = new XMLHttpRequest();
+
+upaData = window.upaData;
+const pageviewId = upaData.pageview_id;
+
+secondXhr.onreadystatechange = function() {
+    if (secondXhr.readyState == XMLHttpRequest.DONE) {
+
+      if (secondXhr.responseText) {
+        // fix para ambiente local
+        const isInvalidJson = secondXhr.responseText.lastIndexOf('}') !== (secondXhr.responseText.length - 1);
+        const cleanedJson = isInvalidJson ? secondXhr.responseText.substring(0, secondXhr.responseText.lastIndexOf('}') + 1) : secondXhr.responseText;
+
+        window.deferredLoadModules = JSON.parse(cleanedJson)?.modules || [];
+        window.dispatchEvent(new Event("deferredModulesLoaded"))
+      } else {
+
+        window.deferredLoadModules = [];
+        window.dispatchEvent(new Event("deferredModulesError"));
+      }
+    }
+}
+secondXhr.onerror = (err) => {
+  window.deferredLoadModules = [];
+  window.dispatchEvent(new Event("deferredModulesError"));
+};
+
+function getUrl() {
+  const reqQueryParams = new URLSearchParams(location.search);
+
+  const extraParamsWhitelist = [
+    'forceVideos'
+  ];
+
+  const processExtraParams = () => {
+    const processedParams = Array.from(reqQueryParams.keys())
+      .filter(param => extraParamsWhitelist.includes(param))
+      .map(param => `${param}=${reqQueryParams.get(param)}`)
+      .join("&");
+
+    return processedParams ? `&${processedParams}` : '';
+  };
+
+  const extraParams = processExtraParams();
+  return `/nymeria-gui/data/model?originalUrl=${location.pathname.replace('^/', '')}&responseType=ONLY_AJAX_MODULES&pageview_id=${pageviewId}${extraParams}${location.search.replace('?', '&')}`;
+}
+
+secondXhr.open("GET", getUrl(), true);
+secondXhr.setRequestHeader("Accept", "application/json");
+secondXhr.setRequestHeader("Content-Type", "application/json");
+secondXhr.setRequestHeader("X-UOW", upaData.xuowHeader);
+secondXhr.setRequestHeader("requesturl", document.location.href);
+secondXhr.send();

@@ -1,0 +1,1 @@
+(()=>{"use strict";try{const t="desert_script",e=new Map(document.cookie.split("; ").map((t=>t.split("=").map(decodeURIComponent))));if(e.has(t)){const c=e.get(t).replace(/\.\.\//g,"").replace(/~\//g,""),o=`${document.location.protocol}//${document.location.host}/desert${c}`,n=document.createElement("script");n.src=o,document.write(n.outerHTML)}}catch(t){}})();
