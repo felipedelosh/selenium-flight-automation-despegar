@@ -1,0 +1,38 @@
+# Archivos de Python
+__pycache__/
+*.py[cod]
+*.so
+*.pyd
+
+# Entornos virtuales
+venv/
+env/
+ENV/
+.venv/
+.ENV/
+
+# Configuración de IDEs y editores
+.vscode/
+.idea/
+*.sublime-workspace
+
+# Dependencias
+Pipfile
+Pipfile.lock
+poetry.lock
+
+# Archivos de log y caché
+*.log
+*.cache
+*.pyc
+
+# Archivos de configuración y datos sensibles
+.env
+*.ini
+*.cfg
+*.toml
+
+# Archivos generados por sistemas operativos
+Thumbs.db
+.DS_Store
+desktop.ini
