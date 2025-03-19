@@ -13,6 +13,7 @@ from selenium.webdriver.support import expected_conditions as EC
 import time
 import random
 
+# Kons
 
 # CONFIG
 _LOGS = ""
@@ -182,34 +183,34 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
             pass
         
         # Search Flight information
-        # try:
-        #     while True:
-        #         _integrity = verify_integrity_input_args(origin_input, destination_input)
-        #         print(verify_integrity_input_args(origin_input, destination_input))
+        try:
+            while True:
+                _integrity = verify_integrity_input_args(origin_input, destination_input)
+                print(verify_integrity_input_args(origin_input, destination_input))
 
-        #         if _integrity[0] and _integrity[1]:  # Verifica que ambos sean True
-        #             break
-        #         else:
-        #             if not _integrity[0]:
-        #                 _LOGS = _LOGS + "Retry FILL orgin\n"
-        #                 time.sleep(random.uniform(1, 3))
-        #                 origin_input = fill_details_origin(_origin)
+                if _integrity[0] and _integrity[1]:  # Verifica que ambos sean True
+                    break
+                else:
+                    if not _integrity[0]:
+                        _LOGS = _LOGS + "Retry FILL orgin\n"
+                        time.sleep(random.uniform(1, 3))
+                        origin_input = fill_details_origin(_origin)
 
-        #             if not _integrity[1]:
-        #                 _LOGS = _LOGS + "Retry FILL Destination\n"
-        #                 time.sleep(random.uniform(1, 3))
-        #                 destination_input = fill_details_destination(_destination)
+                    if not _integrity[1]:
+                        _LOGS = _LOGS + "Retry FILL Destination\n"
+                        time.sleep(random.uniform(1, 3))
+                        destination_input = fill_details_destination(_destination)
 
-        #     btn_search_flight = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="searchbox-v2"]/div/div/div/div/div/div[3]/div[3]/button/em')))
-        #     browser.execute_script("arguments[0].click();", btn_search_flight)
+            btn_search_flight = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="searchbox-v2"]/div/div/div/div/div/div[3]/div[3]/button/em')))
+            browser.execute_script("arguments[0].click();", btn_search_flight)
 
-        #     # Save current data
-        #     html = browser.page_source
-        #     with open("temp.html", "w") as f:
-        #         f.write(html)
+            # Save current data
+            html = browser.page_source
+            with open("temp.html", "w") as f:
+                f.write(html)
 
-        # except:
-        #     _LOGS = _LOGS + "ERROR TO TRY PRESS BUTTON SEARCH!!!!\n"
+        except:
+            _LOGS = _LOGS + "ERROR TO TRY PRESS BUTTON SEARCH!!!!\n"
 
         time.sleep(50)
         # END TRY
