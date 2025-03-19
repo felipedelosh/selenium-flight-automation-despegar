@@ -18,9 +18,13 @@ _LOGS = ""
 _url = "https://www.despegar.com.co/vuelos/"
 _origin = "Manizales, Caldas, Colombia"
 _destination = "Armenia, Quindío, Colombia"
+_current_day_mark = "HOY"
 
 
 def extact_flight_information(_url, _one_way_flight, _origin, _destination):
+    """
+    Enter args and generate File: Pandas with flight information.
+    """
 
     def verify_integrity_input_args(input_origin, input_destination):
         _integrity = [False, False, False, False]
@@ -34,15 +38,52 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
 
         return _integrity
 
+    def fill_details_origin(_origin):
+        global _LOGS
+        try:
+            origin_input = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="searchbox-v2"]/div/div/div/div/div/div[3]/div[1]/div[1]/div[1]/div/div[1]/div/div/input')))
+            origin_input.send_keys(Keys.CONTROL + "a")
+            #origen_input.send_keys(Keys.DELETE)
+            for i in _origin:
+                origin_input.send_keys(i)
+                time.sleep(0.1)
+
+
+            time.sleep(1)
+            current_value = origin_input.get_attribute("value")
+            _LOGS = _LOGS + f"Origin: {current_value}\n"
+        except:
+            _LOGS = _LOGS + "ERROR Selecting Flight ORIGIN.\n"
+
+        return origin_input
+
+
+    def fill_details_destination(_destination):
+        global _LOGS
+        try:
+            destination_input = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="searchbox-v2"]/div/div/div/div/div/div[3]/div[1]/div[1]/div[1]/div/div[2]/div/div/input')))
+            destination_input.click()
+            for i in _destination:
+                destination_input.send_keys(i)
+                time.sleep(0.1)
+            destination_input.send_keys(Keys.TAB)
+
+            time.sleep(1)
+            current_value = destination_input.get_attribute("value")
+            _LOGS = _LOGS + f"Destination: {current_value}\n"
+        except:
+            _LOGS = _LOGS + "ERROR Selecting Flight DESTINATION.\n"
+
+
+        return destination_input
+
     try:
         global _LOGS
         _LOGS = f"{date.today()}\n"
 
-
         # HTML elements
         origin_input = None
         destination_input = None
-
 
         # Configure BOT like a Human
         options = webdriver.ChromeOptions()
@@ -82,55 +123,58 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
             btn_no_benefit.click()
         except:
             _LOGS = _LOGS + "Error NO BENEFIT.\n"
-
-        # ORIGIN
-        try:
-            origin_input = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="searchbox-v2"]/div/div/div/div/div/div[3]/div[1]/div[1]/div[1]/div/div[1]/div/div/input')))
-            origin_input.send_keys(Keys.CONTROL + "a")
-            #origen_input.send_keys(Keys.DELETE)
-            for i in _origin:
-                origin_input.send_keys(i)
-                time.sleep(0.1)
-
-
-            time.sleep(1)
-            current_value = origin_input.get_attribute("value")
-            _LOGS = _LOGS + f"Origin: {current_value}\n"
-        except:
-            _LOGS = _LOGS + "ERROR Selecting Flight ORIGIN.\n"
-
-        # DESTINATION
-        try:
-            destination_input = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="searchbox-v2"]/div/div/div/div/div/div[3]/div[1]/div[1]/div[1]/div/div[2]/div/div/input')))
-            destination_input.click()
-            for i in _destination:
-                destination_input.send_keys(i)
-                time.sleep(0.1)
-            destination_input.send_keys(Keys.TAB)
-
-            time.sleep(1)
-            current_value = destination_input.get_attribute("value")
-            _LOGS = _LOGS + f"Destination: {current_value}\n"
-        except:
-            _LOGS = _LOGS + "ERROR Selecting Flight DESTINATION.\n"
-
-        print(verify_integrity_input_args(origin_input, destination_input))
+        
+        origin_input = fill_details_origin(_origin)
+        destination_input = fill_details_destination(_destination)
 
         # TIME
         try:
             btn_scheluder_A = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="dates-input1"]/div/div/input')))
             btn_scheluder_A.click()
 
-            # //*[@id="component-modals"]/div[1]
-            # Leer todo el datepiker y situarse en la fecha de hoy.
-            _schelude_date = "Crazy"
+            global _current_day_mark
+            btn_date_today = None
+            calendar_container = browser.find_element(By.XPATH, '//*[@id="component-modals"]/div[1]')
+            dates = calendar_container.find_elements(By.XPATH, './/div[contains(@class, "sbox5-monthgrid-datenumber")]')
+            for itter_date in dates:
+                try:
+                    txt = itter_date.text
+
+                    if _current_day_mark == txt:
+                        btn_date_today = itter_date
+                        break
+
+                except:
+                    _LOGS = _LOGS + "ERROR FATAL Selecting DATE Flight.\n"
+
+
+            if btn_date_today:
+                btn_date_today.click()
         except:
             pass
-
+        
+        # Serach Flight information
         try:
-            pass
-            #btn_search_flight = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="searchbox-v2"]/div/div/div/div/div/div[3]/div[3]/button/em')))
-            #browser.execute_script("arguments[0].click();", btn_search_flight)
+            while True:
+                _integrity = verify_integrity_input_args(origin_input, destination_input)
+                print(verify_integrity_input_args(origin_input, destination_input))
+
+                if _integrity[0] and _integrity[1]:  # Verifica que ambos sean True
+                    break
+                else:
+                    if not _integrity[0]:
+                        _LOGS = _LOGS + "Retry FILL orgin\n"
+                        origin_input = fill_details_origin(_origin)
+
+                    if not _integrity[1]:
+                        _LOGS = _LOGS + "Retry FILL Destination\n"
+                        destination_input = fill_details_destination(_destination)
+
+
+            print("Integridad verificada")
+
+            btn_search_flight = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="searchbox-v2"]/div/div/div/div/div/div[3]/div[3]/button/em')))
+            browser.execute_script("arguments[0].click();", btn_search_flight)
         except:
             _LOGS = _LOGS + "ERROR TO TRY PRESS BUTTON\n"
 
