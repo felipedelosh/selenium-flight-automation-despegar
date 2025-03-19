@@ -148,22 +148,32 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
             calendar_container = browser.find_element(By.XPATH, '//*[@id="component-modals"]/div[1]')
 
             dates = calendar_container.find_elements(By.XPATH, './/div[contains(@class, "sbox5-monthgrid-datenumber")]')
-            for index, itter_date in enumerate(dates):
+            for itter_date in dates:
                 try:
                     txt = itter_date.text
 
                     if _current_day_mark == txt:
                         btn_date_today = itter_date
-                        text_date_DD_today = dates[index - 1]
-                        _current_DD = text_date_DD_today.text
+                        # DD
+                        day_container = itter_date.find_element(By.XPATH, "..")
+                        day_container = day_container.text
+                        # Save day
+                        _current_DD = str(day_container).split("\n")[0]
 
+                        # MM & YYYY
+                        month_container = calendar_container.find_element(By.XPATH, f".//div[contains(@class, 'sbox5-monthgrid') and .//div[text()='{_current_DD}']]")
+                        _current_YYYY_MM = month_container.get_attribute("data-month")
+                        _current_YYYY_MM = str(_current_YYYY_MM).split("-")
+                        # Save YYYY & MM
+                        _current_YYYY = _current_YYYY_MM[0]
+                        _current_MM = _current_YYYY_MM[1]
                         break
 
                 except:
                     _LOGS = _LOGS + "ERROR FATAL Selecting DATE Flight.\n"
 
 
-            _LOGS = _LOGS + f"SERVER DATE: {_current_DD}/{"MM"}/{"YYYY"}.\n"
+            _LOGS = _LOGS + f"SERVER DATE: {_current_DD}/{_current_MM}/{_current_YYYY}.\n"
 
             if btn_date_today:
                 btn_date_today.click()
