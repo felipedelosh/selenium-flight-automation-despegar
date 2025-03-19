@@ -140,18 +140,30 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
 
             global _current_day_mark
             btn_date_today = None
+            # Extract information of current date
+            _current_YYYY = None
+            _current_MM = None
+            _current_DD = None
+            # Get despegar scheluded
             calendar_container = browser.find_element(By.XPATH, '//*[@id="component-modals"]/div[1]')
+
             dates = calendar_container.find_elements(By.XPATH, './/div[contains(@class, "sbox5-monthgrid-datenumber")]')
-            for itter_date in dates:
+            for index, itter_date in enumerate(dates):
                 try:
                     txt = itter_date.text
 
                     if _current_day_mark == txt:
                         btn_date_today = itter_date
+                        text_date_DD_today = dates[index - 1]
+                        _current_DD = text_date_DD_today.text
+
                         break
 
                 except:
                     _LOGS = _LOGS + "ERROR FATAL Selecting DATE Flight.\n"
+
+
+            _LOGS = _LOGS + f"SERVER DATE: {_current_DD}/{"MM"}/{"YYYY"}.\n"
 
             if btn_date_today:
                 btn_date_today.click()
@@ -160,28 +172,34 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
             pass
         
         # Search Flight information
-        try:
-            while True:
-                _integrity = verify_integrity_input_args(origin_input, destination_input)
-                print(verify_integrity_input_args(origin_input, destination_input))
+        # try:
+        #     while True:
+        #         _integrity = verify_integrity_input_args(origin_input, destination_input)
+        #         print(verify_integrity_input_args(origin_input, destination_input))
 
-                if _integrity[0] and _integrity[1]:  # Verifica que ambos sean True
-                    break
-                else:
-                    if not _integrity[0]:
-                        _LOGS = _LOGS + "Retry FILL orgin\n"
-                        time.sleep(random.uniform(1, 3))
-                        origin_input = fill_details_origin(_origin)
+        #         if _integrity[0] and _integrity[1]:  # Verifica que ambos sean True
+        #             break
+        #         else:
+        #             if not _integrity[0]:
+        #                 _LOGS = _LOGS + "Retry FILL orgin\n"
+        #                 time.sleep(random.uniform(1, 3))
+        #                 origin_input = fill_details_origin(_origin)
 
-                    if not _integrity[1]:
-                        _LOGS = _LOGS + "Retry FILL Destination\n"
-                        time.sleep(random.uniform(1, 3))
-                        destination_input = fill_details_destination(_destination)
+        #             if not _integrity[1]:
+        #                 _LOGS = _LOGS + "Retry FILL Destination\n"
+        #                 time.sleep(random.uniform(1, 3))
+        #                 destination_input = fill_details_destination(_destination)
 
-            btn_search_flight = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="searchbox-v2"]/div/div/div/div/div/div[3]/div[3]/button/em')))
-            browser.execute_script("arguments[0].click();", btn_search_flight)
-        except:
-            _LOGS = _LOGS + "ERROR TO TRY PRESS BUTTON SEARCH!!!!\n"
+        #     btn_search_flight = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="searchbox-v2"]/div/div/div/div/div/div[3]/div[3]/button/em')))
+        #     browser.execute_script("arguments[0].click();", btn_search_flight)
+
+        #     # Save current data
+        #     html = browser.page_source
+        #     with open("temp.html", "w") as f:
+        #         f.write(html)
+
+        # except:
+        #     _LOGS = _LOGS + "ERROR TO TRY PRESS BUTTON SEARCH!!!!\n"
 
         time.sleep(50)
         # END TRY

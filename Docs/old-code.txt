@@ -1,0 +1,7 @@
+Save part of HTML:
+
+# TEMP
+calendar_html = calendar_container.get_attribute("outerHTML")
+with open("calendar_container.html", "w", encoding="utf-8") as file:
+    file.write(calendar_html)
+# TEMP
