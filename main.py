@@ -14,13 +14,14 @@ import time
 import random
 
 # Kons
+_MM = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+_CURRENT_DAY_HTML_MARK = "HOY"
 
 # CONFIG
 _LOGS = ""
-_url = "https://www.despegar.com.co/vuelos/"
-_origin = "Manizales, Caldas, Colombia"
-_destination = "Armenia, Quindío, Colombia"
-_current_day_mark = "HOY"
+_url = "https://www.despegar.com.co"
+_origin = "Bogotá, Bogotá D.C., Colombia"
+_destination = "Medellín, Antioquia, Colombia"
 
 
 def write_logs():
@@ -34,14 +35,16 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
     """
 
     def verify_integrity_input_args(input_origin, input_destination):
+        global _origin
+        global _destination
         _integrity = [False, False, False, False]
 
         print(input_origin.get_attribute("value"))
         print(input_destination.get_attribute("value"))
         print("===========================================")
 
-        _integrity[0] = True if input_origin is not None and input_origin.get_attribute("value") != "" else False
-        _integrity[1] = True if input_destination is not None and input_destination.get_attribute("value") != "" else False
+        _integrity[0] = True if input_origin is not None and input_origin.get_attribute("value") != "" and input_origin.get_attribute("value") == _origin else False
+        _integrity[1] = True if input_destination is not None and input_destination.get_attribute("value") != "" and input_destination.get_attribute("value") == _destination else False
 
         return _integrity
 
@@ -97,24 +100,37 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
         options.add_argument("--disable-blink-features=AutomationControlled")
         options.add_experimental_option("excludeSwitches", ["enable-automation"])
         options.add_experimental_option("useAutomationExtension", False)
+        #options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36")
+        options.add_argument("--enable-javascript")
 
         browser = webdriver.Chrome(options=options) # Vr > 115 Not NEED WebDriver
+        # VIEW Browser config
+        _LOGS = _LOGS + f"{browser.execute_script("return navigator.userAgent;")}\n"
+        _LOGS = _LOGS + f"EXECUTE JS: {browser.execute_script("return window.navigator.javaEnabled();")}\n"
 
         _LOGS = _LOGS + f"{_url}\n"
         browser.get(_url)
         #browser.maximize_window()
 
-        wait = WebDriverWait(browser, 5)
+        wait = WebDriverWait(browser, 8)
+
+        # GO TO Flights
+        btn_go_flights = wait.until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[2]/nav/div[2]/div/div[3]/ul/li[2]/a/div/div')))
+        btn_go_flights.click()
+        time.sleep(3)
 
         if _one_way_flight:
             btn_one_way = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="oneWay"]/span/button')))
+            time.sleep(random.uniform(0.1, 0.4))
             btn_one_way.click()
         else:
             btn_round_trip_flight = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="oneWay"]/span/button')))
+            time.sleep(random.uniform(0.2, 0.5))
             btn_round_trip_flight.click()
 
         try:
             btn_ok_cookies = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="lgpd-banner"]/div/div')))
+            time.sleep(random.uniform(0.4, 0.7))
             btn_ok_cookies.click()
         except:
             _LOGS = _LOGS + "Error PRESS OK COOKIES.\n"
@@ -127,6 +143,7 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
 
         try:
             btn_no_benefit = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="tooltip-not-logged-incentive"]/span/div[3]/div[3]/em')))
+            time.sleep(random.uniform(0.3, 0.5))
             btn_no_benefit.click()
         except:
             _LOGS = _LOGS + "Error NO BENEFIT.\n"
@@ -139,7 +156,7 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
             btn_scheluder_A = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="dates-input1"]/div/div/input')))
             btn_scheluder_A.click()
 
-            global _current_day_mark
+            global _CURRENT_DAY_HTML_MARK
             btn_date_today = None
             # Extract information of current date
             _current_YYYY = None
@@ -153,7 +170,7 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
                 try:
                     txt = itter_date.text
 
-                    if _current_day_mark == txt:
+                    if _CURRENT_DAY_HTML_MARK == txt:
                         btn_date_today = itter_date
                         # DD
                         day_container = itter_date.find_element(By.XPATH, "..")
@@ -184,6 +201,7 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
         
         # Search Flight information
         try:
+            # Refill information
             while True:
                 _integrity = verify_integrity_input_args(origin_input, destination_input)
                 print(verify_integrity_input_args(origin_input, destination_input))
