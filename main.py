@@ -60,6 +60,8 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
 
 
             time.sleep(1)
+            origin_input.send_keys(Keys.ARROW_DOWN)
+            origin_input.send_keys(Keys.ENTER)
             current_value = origin_input.get_attribute("value")
             _LOGS = _LOGS + f"Origin: {current_value}\n"
         except:
@@ -100,7 +102,7 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
         options.add_argument("--disable-blink-features=AutomationControlled")
         options.add_experimental_option("excludeSwitches", ["enable-automation"])
         options.add_experimental_option("useAutomationExtension", False)
-        #options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36")
+        options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36")
         options.add_argument("--enable-javascript")
 
         browser = webdriver.Chrome(options=options) # Vr > 115 Not NEED WebDriver
@@ -222,10 +224,14 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
             btn_search_flight = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="searchbox-v2"]/div/div/div/div/div/div[3]/div[3]/button/em')))
             browser.execute_script("arguments[0].click();", btn_search_flight)
 
-            # Save current data
-            html = browser.page_source
-            with open("temp.html", "w") as f:
-                f.write(html)
+            # SAVE FINAL DATA USING URL
+            WebDriverWait(browser, 10).until(lambda driver: "results" in driver.current_url)
+            current_url = browser.current_url
+            _LOGS = _LOGS + current_url + "\n"
+            # No need Browser continue with beufifullsoup
+            browser.quit()
+            # 
+
 
         except:
             _LOGS = _LOGS + "ERROR TO TRY PRESS BUTTON SEARCH!!!!\n"
