@@ -11,6 +11,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
+import pandas as pd
 import time
 import random
 
@@ -234,12 +235,9 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
             new_navigator = webdriver.Chrome(options=options)
             new_navigator.get(rich_info_url)
 
-            time.sleep(8)
-
-            html = new_navigator.page_source
-
-            with open("data.html", "w") as f:
-                f.write(html)
+            # html = new_navigator.page_source
+            # with open("data.html", "w") as f:
+            #     f.write(html)
 
             new_wait = WebDriverWait(new_navigator, 8)
             new_action = ActionChains(new_navigator)
@@ -252,14 +250,96 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
             except:
                 _LOGS = _LOGS + "Error PRESS OK COOKIES Navigator 2.\n"
 
-            try:
-                btn_no_benefit = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="login-incentive-wrapper"]/div/div[2]/span')))
-                time.sleep(random.uniform(0.3, 0.5))
-                action.move_to_element(btn_no_benefit).pause(1).click().perform()
-            except:
-                _LOGS = _LOGS + "Error NO BENEFIT.\n"
+            # GET AND SAVE DATA
+            clusters = new_navigator.find_elements(By.CSS_SELECTOR, "cluster.COMMON")
+            _LOGS = _LOGS + f"TOTAL CLUSTERS OF FLIGHT DATA: {len(clusters)}\n"
 
-            time.sleep(50)
+            _output_data = []
+            if clusters:
+                for itter_cluster in clusters:
+                    itinerary_containers = itter_cluster.find_elements(By.CSS_SELECTOR, ".itinerary-container")
+
+                    for itinerary in itinerary_containers:
+                        _airline = ""
+                        _isDirect = []
+                        _date_arrival = ""
+                        _hours_origin = []
+                        _hours_destination = []
+                        _price = ""
+
+
+                        spans_airline = itinerary.find_elements(By.CSS_SELECTOR, 'span')
+                        for span in spans_airline:
+                            text = span.text.strip()
+                            if text:
+                                _airline = text
+                                break  
+
+
+                        stop_span = itinerary.find_elements(By.CSS_SELECTOR, 'span[data-sfa-id="stops-text"]')
+                        for span in stop_span:
+                            if span.text.strip() == "Directo":
+                                _isDirect.append(1)
+                            else:
+                                _isDirect.append(0)
+                        if not _isDirect:  
+                            _isDirect.append(0)
+
+
+                        date_spans = itinerary.find_elements(By.CSS_SELECTOR, 'span[data-sfa-id="route-date"]')
+                        if date_spans:
+                            _date_arrival = date_spans[0].text  # Tomamos solo la primera fecha encontrada
+
+
+                        _isHourOrigin = True
+                        spans_hour = itinerary.find_elements(By.CSS_SELECTOR, "span.hour")
+                        for span in spans_hour:
+                            if _isHourOrigin:
+                                _hours_origin.append(span.text.strip())
+                            else:
+                                _hours_destination.append(span.text.strip())
+                            _isHourOrigin = not _isHourOrigin
+
+
+                        span_price = itinerary.find_elements(By.CSS_SELECTOR, "span.amount.price-amount")
+                        if span_price:
+                            _price = span_price[0].text.strip()
+
+
+                        if len(_hours_origin) == len(_hours_destination):
+                            data = {
+                                "Airline": [_airline] * len(_hours_origin),
+                                "is_direct": _isDirect if len(_isDirect) == len(_hours_origin) else [0] * len(_hours_origin),
+                                "date_arrival": [_date_arrival] * len(_hours_origin),
+                                "Boarding_time": _hours_origin,
+                                "Arrival_time": _hours_destination,
+                                "Price": [_price] * len(_hours_origin),
+                            }
+                            _output_data.append(data)
+
+            # SAVE .CSV
+            if _output_data:
+                expanded_data = []
+                for entry in _output_data:
+                    # Obtener la cantidad de vuelos en la entrada
+                    num_flights = len(entry['Airline'])
+                    
+                    # Expandir los datos por cada vuelo
+                    for i in range(num_flights):
+                        expanded_data.append({
+                            'Airline': entry['Airline'][i],
+                            'is_direct': entry['is_direct'][i],
+                            'date_arrival': entry['date_arrival'][i],
+                            'Boarding_time': entry['Boarding_time'][i],
+                            'Arrival_time': entry['Arrival_time'][i],
+                            'Price': entry['Price'][i]
+                        })
+
+                df = pd.DataFrame(expanded_data)
+                df.to_csv("despegar.csv", sep="|", index=False)
+                _LOGS = _LOGS + "SAVE ===  despegar.csv  ===\n"
+            else:
+                _LOGS = _LOGS + "ERROR TO SAVE .CSV NO DATA\n"
 
             new_navigator.quit()
 
