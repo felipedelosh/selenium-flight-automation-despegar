@@ -10,6 +10,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.action_chains import ActionChains
 import time
 import random
 
@@ -53,7 +54,6 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
             for i in _origin:
                 origin_input.send_keys(i)
                 time.sleep(random.uniform(0.05, 0.2))
-
 
             time.sleep(1)
             origin_input.send_keys(Keys.ARROW_DOWN)
@@ -111,25 +111,26 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
         #browser.maximize_window()
 
         wait = WebDriverWait(browser, 8)
+        action = ActionChains(browser) # Clicks like a human
 
         # GO TO Flights
         btn_go_flights = wait.until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[2]/nav/div[2]/div/div[3]/ul/li[2]/a/div/div')))
-        btn_go_flights.click()
+        action.move_to_element(btn_go_flights).pause(1).click().perform()
         time.sleep(3)
 
         if _one_way_flight:
             btn_one_way = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="oneWay"]/span/button')))
             time.sleep(random.uniform(0.1, 0.4))
-            btn_one_way.click()
+            action.move_to_element(btn_one_way).pause(1).click().perform()
         else:
             btn_round_trip_flight = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="oneWay"]/span/button')))
             time.sleep(random.uniform(0.2, 0.5))
-            btn_round_trip_flight.click()
+            action.move_to_element(btn_round_trip_flight).pause(1).click().perform()
 
         try:
             btn_ok_cookies = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="lgpd-banner"]/div/div')))
             time.sleep(random.uniform(0.4, 0.7))
-            btn_ok_cookies.click()
+            action.move_to_element(btn_ok_cookies).pause(1).click().perform()
         except:
             _LOGS = _LOGS + "Error PRESS OK COOKIES.\n"
 
@@ -142,7 +143,7 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
         try:
             btn_no_benefit = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="tooltip-not-logged-incentive"]/span/div[3]/div[3]/em')))
             time.sleep(random.uniform(0.3, 0.5))
-            btn_no_benefit.click()
+            action.move_to_element(btn_no_benefit).pause(1).click().perform()
         except:
             _LOGS = _LOGS + "Error NO BENEFIT.\n"
         
@@ -152,7 +153,7 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
         # TIME
         try:
             btn_scheluder_A = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="dates-input1"]/div/div/input')))
-            btn_scheluder_A.click()
+            action.move_to_element(btn_scheluder_A).pause(1).click().perform()
 
             global _CURRENT_DAY_HTML_MARK
             btn_date_today = None
@@ -202,7 +203,7 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
             # Refill information
             while True:
                 _integrity = verify_integrity_input_args(origin_input, destination_input)
-                print(verify_integrity_input_args(origin_input, destination_input))
+                # print(verify_integrity_input_args(origin_input, destination_input))
 
                 if _integrity[0] and _integrity[1]:  # Verifica que ambos sean True
                     break
@@ -225,14 +226,14 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
             current_url = browser.current_url
             _LOGS = _LOGS + current_url + "\n"
             # No need Browser continue with beufifullsoup
-            browser.quit()
-            # 
+            _LOGS = _LOGS + "bs4\n"
+
 
 
         except:
             _LOGS = _LOGS + "ERROR TO TRY PRESS BUTTON SEARCH!!!!\n"
 
-        time.sleep(50)
+        time.sleep(10)
         # END TRY
     except:
         print("FATAL ERROR!")
