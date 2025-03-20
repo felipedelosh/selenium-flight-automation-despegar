@@ -223,12 +223,20 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
 
             # SAVE FINAL DATA USING URL
             WebDriverWait(browser, 10).until(lambda driver: "results" in driver.current_url)
-            current_url = browser.current_url
-            _LOGS = _LOGS + current_url + "\n"
+            rich_info_url = browser.current_url
+            _LOGS = _LOGS + rich_info_url + "\n"
             # No need Browser continue with beufifullsoup
             _LOGS = _LOGS + "bs4\n"
 
+            driver = webdriver.Chrome()
+            driver.get(rich_info_url)
+            time.sleep(5)
+            html = driver.page_source
 
+            with open("data.html", "w") as f:
+                f.write(html)
+
+            driver.quit()
 
         except:
             _LOGS = _LOGS + "ERROR TO TRY PRESS BUTTON SEARCH!!!!\n"
