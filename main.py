@@ -156,6 +156,7 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
             action.move_to_element(btn_scheluder_A).pause(1).click().perform()
 
             global _CURRENT_DAY_HTML_MARK
+            index_date_today = -1
             btn_date_today = None
             # Extract information of current date
             _current_YYYY = None
@@ -165,12 +166,13 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
             calendar_container = browser.find_element(By.XPATH, '//*[@id="component-modals"]/div[1]')
 
             dates = calendar_container.find_elements(By.XPATH, './/div[contains(@class, "sbox5-monthgrid-datenumber")]')
-            for itter_date in dates:
+            for index, itter_date in enumerate(dates):
                 try:
                     txt = itter_date.text
 
                     if _CURRENT_DAY_HTML_MARK == txt:
                         btn_date_today = itter_date
+                        index_date_today = index
                         # DD
                         day_container = itter_date.find_element(By.XPATH, "..")
                         day_container = day_container.text
@@ -192,8 +194,10 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
 
             _LOGS = _LOGS + f"SERVER DATE: {_current_DD}/{_current_MM}/{_current_YYYY}.\n"
 
-            if btn_date_today:
-                btn_date_today.click()
+            if btn_date_today and index_date_today > 0:
+                # WANIING: +1 only for a testing... 
+                next_day = dates[index_date_today + 1]
+                next_day.click()
 
         except:
             pass

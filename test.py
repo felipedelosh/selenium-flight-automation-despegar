@@ -1,44 +1,44 @@
 from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-import time
 
-# Configurar Selenium
-options = webdriver.ChromeOptions()
-options.add_argument("--disable-blink-features=AutomationControlled")
+with open("data.html", "r") as file:
+    soup = BeautifulSoup(file, "html.parser")
 
-browser = webdriver.Chrome(options=options)
-wait = WebDriverWait(browser, 10)
+# Buscar todos los elementos con la clase "reduced-cluster"
+clusters = soup.find_all("cluster", class_="COMMON")
 
-# URL de resultados (ajústala según tus parámetros)
-search_url = "https://www.despegar.com.co/shop/flights/results/oneway/BOG/MDE/2025-03-19/1/0/0?from=SB&di=1"
+# Imprimir la cantidad de elementos encontrados
+print(f"Se encontraron {len(clusters)} elementos con la clase 'reduced-cluster'.")
 
-# Navegar a la página
-browser.get(search_url)
-time.sleep(5)  # Esperar para que cargue el contenido dinámico
+# Opcional: imprimir el contenido del primer elemento
+if clusters:
+    for cluster in clusters:
+        _airline = ""
+        spans_airline = cluster.find_all("span", attrs={"_ngcontent-aqu-c200": True})
+        for span in spans_airline:
+            _airline = span.get_text(strip=True)
+            break
 
-# Obtener HTML completo después de cargar con JS
-html = browser.page_source
+        _isHourOrigin = True
+        _hours_origin = []
+        _hours_destination = []
+        spans_hour = cluster.find_all("span", class_="hour")
+        for span in spans_hour:
+            if _isHourOrigin:
+                _hours_origin.append(span.get_text(strip=True))
+            else:
+                _hours_destination.append(span.get_text(strip=True))
 
-# Cerrar navegador
-browser.quit()
+            _isHourOrigin = not _isHourOrigin
 
-# Procesar con BeautifulSoup
-soup = BeautifulSoup(html, "html.parser")
 
-# Buscar contenedores de vuelos (ajusta el selector según el HTML real)
-flight_containers = soup.find_all("div", class_="cluster-container")  
+        _price = cluster.find("span", class_="amount price-amount").get_text(strip=True)
 
-# Extraer información
-flights = []
-for flight in flight_containers:
-    airline = flight.find("span", class_="airline-name").text.strip() if flight.find("span", class_="airline-name") else "Desconocido"
-    price = flight.find("span", class_="amount").text.strip() if flight.find("span", class_="amount") else "Sin precio"
-    
-    flights.append({"aerolinea": airline, "precio": price})
+        if len(_hours_origin) == len(_hours_destination):
+            data = {}
+            data["Airline"] = [_airline] * len(_hours_origin)
+            data["Boarding_time"] = _hours_origin
+            data["Arrival_time"] = _hours_destination
+            data["Price"] = [_price] * len(_hours_origin)
 
-# Mostrar resultados
-for f in flights:
-    print(f"Aerolínea: {f['aerolinea']} - Precio: {f['precio']}")
+            print(data)
+        break
