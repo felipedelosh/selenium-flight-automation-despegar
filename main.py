@@ -286,10 +286,14 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
                             _isDirect.append(0)
 
 
-                        date_spans = itinerary.find_elements(By.CSS_SELECTOR, 'span[data-sfa-id="route-date"]')
-                        if date_spans:
-                            _date_arrival = date_spans[0].text  # Tomamos solo la primera fecha encontrada
-
+                        _date_arrival = ""
+                        date_spans = itter_cluster.find_elements(By.CSS_SELECTOR, 'span[data-sfa-id="route-date"]')
+                        for span in date_spans:
+                            text = span.text.strip()
+                            if text:
+                                _date_arrival = text
+                                break  
+                            
 
                         _isHourOrigin = True
                         spans_hour = itinerary.find_elements(By.CSS_SELECTOR, "span.hour")
