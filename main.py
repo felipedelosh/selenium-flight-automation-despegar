@@ -301,9 +301,8 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
                             _isHourOrigin = not _isHourOrigin
 
 
-                        span_price = itinerary.find_elements(By.CSS_SELECTOR, "span.amount.price-amount")
-                        if span_price:
-                            _price = span_price[0].text.strip()
+                        span_price = itter_cluster.find_element(By.CSS_SELECTOR, "span.amount.price-amount")
+                        _price = span_price.text
 
 
                         if len(_hours_origin) == len(_hours_destination):
