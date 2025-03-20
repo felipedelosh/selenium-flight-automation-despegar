@@ -103,7 +103,7 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
 
         browser = webdriver.Chrome(options=options) # Vr > 115 Not NEED WebDriver
         # VIEW Browser config
-        _LOGS = _LOGS + f"{browser.execute_script("return navigator.userAgent;")}\n"
+        _LOGS = _LOGS + f"USER AGENT: {browser.execute_script("return navigator.userAgent;")}\n"
         _LOGS = _LOGS + f"EXECUTE JS: {browser.execute_script("return window.navigator.javaEnabled();")}\n"
 
         _LOGS = _LOGS + f"{_url}\n"
@@ -229,18 +229,39 @@ def extact_flight_information(_url, _one_way_flight, _origin, _destination):
             WebDriverWait(browser, 10).until(lambda driver: "results" in driver.current_url)
             rich_info_url = browser.current_url
             _LOGS = _LOGS + rich_info_url + "\n"
-            # No need Browser continue with beufifullsoup
-            _LOGS = _LOGS + "bs4\n"
 
-            driver = webdriver.Chrome()
-            driver.get(rich_info_url)
-            time.sleep(5)
-            html = driver.page_source
+            # Open other navegator to over captcha.
+            new_navigator = webdriver.Chrome(options=options)
+            new_navigator.get(rich_info_url)
+
+            time.sleep(8)
+
+            html = new_navigator.page_source
 
             with open("data.html", "w") as f:
                 f.write(html)
 
-            driver.quit()
+            new_wait = WebDriverWait(new_navigator, 8)
+            new_action = ActionChains(new_navigator)
+            _LOGS = _LOGS + "Open Navigator 2.\n"
+            
+            try:
+                btn_ok_cookies = new_wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="lgpd-banner"]/div/div')))
+                time.sleep(random.uniform(0.4, 0.7))
+                new_action.move_to_element(btn_ok_cookies).pause(1).click().perform()
+            except:
+                _LOGS = _LOGS + "Error PRESS OK COOKIES Navigator 2.\n"
+
+            try:
+                btn_no_benefit = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="login-incentive-wrapper"]/div/div[2]/span')))
+                time.sleep(random.uniform(0.3, 0.5))
+                action.move_to_element(btn_no_benefit).pause(1).click().perform()
+            except:
+                _LOGS = _LOGS + "Error NO BENEFIT.\n"
+
+            time.sleep(50)
+
+            new_navigator.quit()
 
         except:
             _LOGS = _LOGS + "ERROR TO TRY PRESS BUTTON SEARCH!!!!\n"
